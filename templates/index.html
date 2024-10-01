@@ -123,14 +123,21 @@
         // Video fayllarining ro'yxati va ularning nomlari
         const videos = [
             {% for item in objects %}
-            { src: "{{item.video.url}}", title: "{{item.name}}" },
+            { src: "{{ item.video.url }}", title: "{{ item.name }}" },
             {% endfor %}
         ];
         let currentVideoIndex = 0;
 
         // Birinchi videoni yuklash
-        video.src = videos[currentVideoIndex].src;
-        videoTitle.textContent = videos[currentVideoIndex].title; // Videoning nomini ko'rsatish
+        function loadVideo(index) {
+            video.src = videos[index].src; // Yangi video manzilini qo'shish
+            videoTitle.textContent = videos[index].title; // Yangi videoning nomini ko'rsatish
+            video.play(); // Yangi videoni o'ynatish
+            icon.classList.remove('play-icon', 'pause-icon');
+            icon.classList.add('pause-icon'); // O'ynatishdan keyin to'xtatish ikonasini ko'rsatish
+        }
+
+        loadVideo(currentVideoIndex); // Dastlabki videoni yuklash
         video.volume = 1.0; // Ovoz darajasini to'liq qilish
 
         icon.addEventListener('click', () => {
@@ -152,12 +159,32 @@
             } else {
                 currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Oldingi video indeksini olish
             }
-            video.src = videos[currentVideoIndex].src; // Yangi video manzilini qo'shish
-            videoTitle.textContent = videos[currentVideoIndex].title; // Yangi videoning nomini ko'rsatish
-            video.play(); // Yangi videoni o'ynatish
-            icon.classList.remove('play-icon', 'pause-icon');
-            icon.classList.add('pause-icon'); // O'ynatishdan keyin to'xtatish ikonasini ko'rsatish
+            loadVideo(currentVideoIndex);
             event.preventDefault(); // Skrolni to'xtatish
+        });
+
+        // Sensorli ekranlar uchun hodisalarni qo'shish
+        let touchStartY = null;
+
+        window.addEventListener('touchstart', (event) => {
+            touchStartY = event.touches[0].clientY; // Touchning boshlanish nuqtasi
+        });
+
+        window.addEventListener('touchmove', (event) => {
+            if (touchStartY === null) return;
+
+            const touchY = event.touches[0].clientY;
+            const deltaY = touchY - touchStartY;
+
+            if (deltaY > 50) { // Agar yuqoridan pastga siljitsa
+                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Oldingi video
+                loadVideo(currentVideoIndex);
+                touchStartY = null; // Yana boshidan boshlash
+            } else if (deltaY < -50) { // Agar pastdan yuqoriga siljitsa
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Keyingi video
+                loadVideo(currentVideoIndex);
+                touchStartY = null; // Yana boshidan boshlash
+            }
         });
     </script>
 </body>
