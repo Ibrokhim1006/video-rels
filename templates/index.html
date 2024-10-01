@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Reels</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            overflow-y: scroll; /* Vertikal skrolni yoqish */
+            color: #fff; /* Matn rangini oq qilish */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column; /* Vertikal yo'nalish */
+            height: 100vh; /* To'liq balandlik */
+            justify-content: flex-start; /* O'rtaga joylash */
+            align-items: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%; /* To'liq kenglik */
+            height: 100vh; /* To'liq balandlik */
+            overflow: hidden;
+            border-radius: 15px;
+            margin-bottom: 20px; /* Har bir video orasida bo'shliq */
+        }
+
+        video {
+            width: 100%;
+            height: 100%; /* To'liq balandlik */
+            border-radius: 15px;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .video-container:hover .overlay {
+            opacity: 1;
+        }
+
+        .controls {
+            display: flex;
+        }
+
+        .icon {
+            width: 50px; /* Ikonkani kengligi */
+            height: 50px; /* Ikonkani balandligi */
+            background-color: #fff; /* Ikonkani fon rangi */
+            border-radius: 50%; /* Yuqoriga egilgan burchaklar */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .icon:hover {
+            background-color: #f0f0f0; /* Hover holatida rangi */
+        }
+
+        /* O'ynatish va to'xtatish ikonalari */
+        .play-icon:before {
+            content: "▶"; /* O'ynatish ikonasini ko'rsatish */
+            font-size: 30px;
+            color: #000; /* Ikonaning rangi */
+        }
+
+        .pause-icon:before {
+            content: "❚❚"; /* To'xtatish ikonasini ko'rsatish */
+            font-size: 30px;
+            color: #000; /* Ikonaning rangi */
+        }
+
+        .video-title {
+            position: absolute;
+            bottom: 10px; /* Pastki qismga joylash */
+            left: 0;
+            right: 0;
+            text-align: center; /* Markazga joylash */
+            font-size: 20px; /* Videoning nomi uchun o'lcham */
+            color: #fff; /* Videoning nomi rangi */
+            background: rgba(0, 0, 0, 0.7); /* Pastki fonda soyali rang */
+            padding: 5px; /* Ichki bo'shliq */
+            border-radius: 5px; /* Burchaklarini yumshatish */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="video-container" id="videoContainer">
+            <video id="video" loop></video>
+            <div class="overlay">
+                <div class="controls">
+                    <div id="icon" class="icon play-icon"></div> <!-- Ikonka -->
+                </div>
+            </div>
+            <div id="videoTitle" class="video-title"></div> <!-- Videoning nomi -->
+        </div>
+        <!-- Har bir video uchun yangi video-container yaratiladi -->
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const icon = document.getElementById('icon');
+        const videoTitle = document.getElementById('videoTitle');
+
+        // Video fayllarining ro'yxati va ularning nomlari
+        const videos = [
+            {% for item in objects %}
+            { src: "{{item.video.url}}", title: "{{item.name}}" },
+            {% endfor %}
+        ];
+        let currentVideoIndex = 0;
+
+        // Birinchi videoni yuklash
+        video.src = videos[currentVideoIndex].src;
+        videoTitle.textContent = videos[currentVideoIndex].title; // Videoning nomini ko'rsatish
+        video.volume = 1.0; // Ovoz darajasini to'liq qilish
+
+        icon.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                icon.classList.remove('play-icon');
+                icon.classList.add('pause-icon');
+            } else {
+                video.pause();
+                icon.classList.remove('pause-icon');
+                icon.classList.add('play-icon');
+            }
+        });
+
+        // Skrol hodisasi
+        window.addEventListener('wheel', (event) => {
+            if (event.deltaY > 0) {
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Keyngi video indeksini olish
+            } else {
+                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Oldingi video indeksini olish
+            }
+            video.src = videos[currentVideoIndex].src; // Yangi video manzilini qo'shish
+            videoTitle.textContent = videos[currentVideoIndex].title; // Yangi videoning nomini ko'rsatish
+            video.play(); // Yangi videoni o'ynatish
+            icon.classList.remove('play-icon', 'pause-icon');
+            icon.classList.add('pause-icon'); // O'ynatishdan keyin to'xtatish ikonasini ko'rsatish
+            event.preventDefault(); // Skrolni to'xtatish
+        });
+    </script>
+</body>
+</html>
