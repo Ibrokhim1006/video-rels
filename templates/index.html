@@ -9,30 +9,66 @@
         body {
             margin: 0;
             background-color: #000;
-            overflow-y: scroll; /* Vertikal skrolni yoqish */
-            color: #fff; /* Matn rangini oq qilish */
+            overflow-y: scroll;
+            color: #fff;
         }
 
         .container {
             display: flex;
-            flex-direction: column; /* Vertikal yo'nalish */
-            height: 100vh; /* To'liq balandlik */
-            justify-content: flex-start; /* O'rtaga joylash */
+            flex-direction: column;
+            height: 100vh;
+            justify-content: flex-start;
             align-items: center;
+        }
+
+        .search-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+        }
+
+        .search-bar input {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 25px;
+            border: none;
+            outline: none;
+            margin-right: 10px;
+        }
+
+        .search-bar button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-bar button:hover {
+            background-color: #ff3300;
         }
 
         .video-container {
             position: relative;
-            width: 100%; /* To'liq kenglik */
-            height: 100vh; /* To'liq balandlik */
+            width: 100%;
+            height: 100vh;
             overflow: hidden;
             border-radius: 15px;
-            margin-bottom: 20px; /* Har bir video orasida bo'shliq */
+            margin-top: 60px; /* Qidirish panelidan pastga ko'chirish uchun */
         }
 
         video {
             width: 100%;
-            height: 100%; /* To'liq balandlik */
+            height: 100%;
             border-radius: 15px;
         }
 
@@ -56,89 +92,163 @@
 
         .controls {
             display: flex;
+            justify-content: flex-end; /* O'ng tomonga joylash */
+            margin-right: 20px; /* O'ng tomondan masofa */
         }
 
         .icon {
-            width: 50px; /* Ikonkani kengligi */
-            height: 50px; /* Ikonkani balandligi */
-            background-color: #fff; /* Ikonkani fon rangi */
-            border-radius: 50%; /* Yuqoriga egilgan burchaklar */
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 0 5px;
         }
 
         .icon:hover {
-            background-color: #f0f0f0; /* Hover holatida rangi */
+            background-color: #f0f0f0;
         }
 
-        /* O'ynatish va to'xtatish ikonalari */
         .play-icon:before {
-            content: "▶"; /* O'ynatish ikonasini ko'rsatish */
+            content: "▶";
             font-size: 30px;
-            color: #000; /* Ikonaning rangi */
+            color: #000;
         }
 
         .pause-icon:before {
-            content: "❚❚"; /* To'xtatish ikonasini ko'rsatish */
+            content: "❚❚";
             font-size: 30px;
-            color: #000; /* Ikonaning rangi */
+            color: #000;
+        }
+
+        .like-icon:before {
+            content: "❤️";
+            font-size: 30px;
+            color: #000;
+        }
+
+        .share-icon:before {
+            content: "🔗";
+            font-size: 30px;
+            color: #000;
+        }
+
+        .like-count {
+            margin-left: 10px;
+            font-size: 20px;
+            color: #fff;
         }
 
         .video-title {
             position: absolute;
-            bottom: 10px; /* Pastki qismga joylash */
+            bottom: 10px;
             left: 0;
             right: 0;
-            text-align: center; /* Markazga joylash */
-            font-size: 20px; /* Videoning nomi uchun o'lcham */
-            color: #fff; /* Videoning nomi rangi */
-            background: rgba(0, 0, 0, 0.7); /* Pastki fonda soyali rang */
-            padding: 5px; /* Ichki bo'shliq */
-            border-radius: 5px; /* Burchaklarini yumshatish */
+            text-align: center;
+            font-size: 20px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .close {
+            float: right;
+            font-size: 25px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Поиск видео...">
+        <button id="searchButton">Поиск</button>
+    </div>
+
     <div class="container">
         <div class="video-container" id="videoContainer">
-            <video id="video" loop></video>
+            <video id="video" loop autoplay></video>
             <div class="overlay">
                 <div class="controls">
-                    <div id="icon" class="icon play-icon"></div> <!-- Ikonka -->
+                    <div id="icon" class="icon play-icon"></div>
+                    <!-- Like tugmasi va soni -->
+                    <div id="likeButton" class="icon like-icon"></div>
+                    <span id="likeCount" class="like-count">0</span>
+                    <!-- Share tugmasi -->
+                    <div id="shareButton" class="icon share-icon"></div>
                 </div>
             </div>
-            <div id="videoTitle" class="video-title"></div> <!-- Videoning nomi -->
+            <div id="videoTitle" class="video-title"></div>
         </div>
-        <!-- Har bir video uchun yangi video-container yaratiladi -->
+    </div>
+
+    <!-- Telegram va Instagramga ulashish havolasi uchun modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Share Video</h2>
+            <button id="telegramShare">Share to Telegram</button>
+            <button id="instagramShare">Share to Instagram</button>
+            <button class="close" style="margin-top: 10px;">Close</button> <!-- Modalni yopish tugmasi -->
+        </div>
     </div>
 
     <script>
         const video = document.getElementById('video');
         const icon = document.getElementById('icon');
         const videoTitle = document.getElementById('videoTitle');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const likeButton = document.getElementById('likeButton');
+        const shareButton = document.getElementById('shareButton');
+        const shareModal = document.getElementById('shareModal');
+        const closeModal = document.querySelector('.close');
+        const telegramShare = document.getElementById('telegramShare');
+        const instagramShare = document.getElementById('instagramShare');
+        const likeCountElement = document.getElementById('likeCount');
 
-        // Video fayllarining ro'yxati va ularning nomlari
         const videos = [
             {% for item in objects %}
             { src: "{{ item.video.url }}", title: "{{ item.name }}" },
             {% endfor %}
         ];
         let currentVideoIndex = 0;
+        let likeCount = 0; // Like soni
 
-        // Birinchi videoni yuklash
         function loadVideo(index) {
-            video.src = videos[index].src; // Yangi video manzilini qo'shish
-            videoTitle.textContent = videos[index].title; // Yangi videoning nomini ko'rsatish
-            video.play(); // Yangi videoni o'ynatish
+            video.src = videos[index].src;
+            videoTitle.textContent = videos[index].title;
+            video.play();
             icon.classList.remove('play-icon', 'pause-icon');
-            icon.classList.add('pause-icon'); // O'ynatishdan keyin to'xtatish ikonasini ko'rsatish
+            icon.classList.add('pause-icon');
         }
 
-        loadVideo(currentVideoIndex); // Dastlabki videoni yuklash
-        video.volume = 1.0; // Ovoz darajasini to'liq qilish
+        loadVideo(currentVideoIndex);
+        video.volume = 1.0;
 
         icon.addEventListener('click', () => {
             if (video.paused) {
@@ -152,39 +262,54 @@
             }
         });
 
-        // Skrol hodisasi
-        window.addEventListener('wheel', (event) => {
-            if (event.deltaY > 0) {
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Keyngi video indeksini olish
+        // Like tugmasi uchun
+        likeButton.addEventListener('click', () => {
+            likeButton.classList.toggle('liked');
+            if (likeButton.classList.contains('liked')) {
+                likeCount++;
+                likeCountElement.textContent = likeCount; // Yangilangan like sonini ko'rsatish
+                console.log('Liked video:', videos[currentVideoIndex].title);
             } else {
-                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Oldingi video indeksini olish
+                likeCount--;
+                likeCountElement.textContent = likeCount; // Yangilangan like sonini ko'rsatish
+                console.log('Unliked video:', videos[currentVideoIndex].title);
             }
-            loadVideo(currentVideoIndex);
-            event.preventDefault(); // Skrolni to'xtatish
         });
 
-        // Sensorli ekranlar uchun hodisalarni qo'shish
-        let touchStartY = null;
+        // Qidirish funksiyasi
+        function searchVideo() {
+            const query = searchInput.value.toLowerCase();
+            const foundIndex = videos.findIndex(video => video.title.toLowerCase().includes(query));
+            if (foundIndex !== -1) {
+                currentVideoIndex = foundIndex;
+                loadVideo(foundIndex);
+            } else {
+                console.log('no video');
+            }
+        }
 
-        window.addEventListener('touchstart', (event) => {
-            touchStartY = event.touches[0].clientY; // Touchning boshlanish nuqtasi
+        // Qidirish tugmasi hodisasi
+        searchButton.addEventListener('click', searchVideo);
+
+        // Ulanish tugmasi
+        shareButton.addEventListener('click', () => {
+            shareModal.style.display = 'flex';
         });
 
-        window.addEventListener('touchmove', (event) => {
-            if (touchStartY === null) return;
+        // Modalni yopish
+        closeModal.addEventListener('click', () => {
+            shareModal.style.display = 'none';
+        });
 
-            const touchY = event.touches[0].clientY;
-            const deltaY = touchY - touchStartY;
+        // Telegram va Instagramga ulashish
+        telegramShare.addEventListener('click', () => {
+            alert('Video Telegramga ulashildi!');
+            shareModal.style.display = 'none';
+        });
 
-            if (deltaY > 50) { // Agar yuqoridan pastga siljitsa
-                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Oldingi video
-                loadVideo(currentVideoIndex);
-                touchStartY = null; // Yana boshidan boshlash
-            } else if (deltaY < -50) { // Agar pastdan yuqoriga siljitsa
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Keyingi video
-                loadVideo(currentVideoIndex);
-                touchStartY = null; // Yana boshidan boshlash
-            }
+        instagramShare.addEventListener('click', () => {
+            alert('Video Instagramga ulashildi!');
+            shareModal.style.display = 'none';
         });
     </script>
 </body>
