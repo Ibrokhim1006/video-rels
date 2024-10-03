@@ -34,12 +34,13 @@
 
         .search-bar input {
             width: 300px;
-            padding: 10px;
+            padding: 10px 40px 10px 20px; /* O'ng tomondan joy yaratish uchun */
             font-size: 16px;
             border-radius: 25px;
             border: none;
             outline: none;
             margin-right: 10px;
+            position: relative;
         }
 
         .search-bar button {
@@ -55,6 +56,23 @@
 
         .search-bar button:hover {
             background-color: #ff3300;
+        }
+
+        .clear-button {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #aaa;
+            cursor: pointer;
+            display: none; /* Dastlab ko'rinmas */
+        }
+
+        .clear-button:hover {
+            color: #fff;
         }
 
         .video-container {
@@ -92,7 +110,7 @@
 
         .controls {
             position: absolute;
-            bottom: 66px; /* Tugmalar pastda joylashishi uchun */
+            bottom: 80px; /* Tugmalar pastda joylashishi uchun */
             right: 10px; /* O'ng tomonda joylashishi */
             display: flex;
             flex-direction: column; /* Tugmalarni vertikal joylashtirish */
@@ -153,12 +171,26 @@
 
         .video-title {
             position: absolute;
-            bottom: 10px;
+            bottom: 40px; /* Hashteg uchun joy qoldiring */
             left: 0;
             right: 0;
             text-align: center;
             font-size: 20px;
             color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .hashteg {
+            position: absolute;
+            bottom: 10px; /* Sarlavhaning pastiga joylashtirish uchun */
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 18px;
+            color: #ff6600; /* Rangini ajratib ko'rsatish uchun */
+            cursor: pointer; /* Cursor pointer qiling */
             background: rgba(0, 0, 0, 0.7);
             padding: 5px;
             border-radius: 5px;
@@ -181,7 +213,10 @@
 </head>
 <body>
     <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Поиск видео...">
+        <div style="position: relative;">
+            <input type="text" id="searchInput" placeholder="Поиск видео...">
+            <button class="clear-button" id="clearButton">X</button>
+        </div>
         <button id="searchButton">Поиск</button>
     </div>
 
@@ -198,6 +233,7 @@
                 </div>
             </div>
             <div id="videoTitle" class="video-title"></div>
+            <div id="hashteg" class="hashteg"></div>
         </div>
     </div>
 
@@ -205,21 +241,29 @@
         const video = document.getElementById('video');
         const icon = document.getElementById('icon');
         const videoTitle = document.getElementById('videoTitle');
+        const hashteg = document.getElementById('hashteg');
         const likeCount = document.getElementById('likeCount'); // Like count element
         const searchInput = document.getElementById('searchInput');
+        const clearButton = document.getElementById('clearButton');
         const searchButton = document.getElementById('searchButton');
         const likeButton = document.getElementById('likeButton');
         const shareButton = document.getElementById('shareButton');
 
         const videos = [
             {% for item in objects %}
-            { id: {{ item.id }}, src: "{{ item.video.url }}", title: "{{ item.name }}", likes: {{ item.like_count }} },
+            { id: {{ item.id }}, src: "{{ item.video.url }}", title: "{{ item.name }}", likes: "{{ item.like_count }}", hashteg: "{{ item.hashteg|default_if_none:'' }}"},
             {% endfor %}
         ];
         let currentVideoIndex = 0;
 
         function loadVideo(index) {
             video.src = videos[index].src;
+            if (videos[index].hashteg) {
+                hashteg.textContent = videos[index].hashteg;
+                hashteg.style.display = 'block'; // Agar hashtag bo'lsa, ko'rsatish
+            } else {
+                hashteg.style.display = 'none'; // Agar hashtag bo'lmasa, yashirish
+            }
             videoTitle.textContent = videos[index].title;
             likeCount.textContent = `Likes: ${videos[index].likes}`; // Update like count
             video.play();
@@ -296,8 +340,10 @@
 
         // Qidiruv tugmasini bosganingizda qidiruv natijalarini ko'rsatish
         searchButton.addEventListener('click', () => {
-            const query = searchInput.value.toLowerCase();
-            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(query));
+        const query = searchInput.value.toLowerCase();
+        const filteredVideos = videos.filter(video => 
+            video.title.toLowerCase().includes(query) || video.hashteg.toLowerCase().includes(query)
+        );
             if (filteredVideos.length > 0) {
                 currentVideoIndex = 0; // Birinchi videoni yuklash
                 loadFilteredVideos(filteredVideos);
@@ -328,6 +374,24 @@
     // Sahna yuklanganda default holat
     video.muted = true; // Videoni muet holatida yuklang
     muteButton.classList.add('muted'); // Ovoz o'chirilgan belgisini ko'rsatish
+
+
+
+    // X tugmachasini faqat matn mavjud bo'lsa ko'rsatish
+    searchInput.addEventListener('input', () => {
+            if (searchInput.value.length > 0) {
+                clearButton.style.display = 'block'; // Ko'rsatish
+            } else {
+                clearButton.style.display = 'none'; // Yashirish
+            }
+        });
+
+        // X tugmachasini bosganda qidiruv maydonini tozalash
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            clearButton.style.display = 'none'; // Tugmani yashirish
+            searchInput.focus(); // Qidiruv maydoniga fokusni qaytarish
+        });
     </script>
 </body>
 </html>

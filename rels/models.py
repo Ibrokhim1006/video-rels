@@ -10,6 +10,7 @@ class Video(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'mkv'])]
     )
     like_count = models.BigIntegerField(default=0, null=True, blank=True, verbose_name='Like')
+    hashteg = models.CharField(max_length=250, null=True, blank=True, verbose_name='Хэштег')
 
     def add_like(self):
         """Video ga like qo'shish."""
