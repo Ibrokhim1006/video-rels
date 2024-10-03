@@ -267,6 +267,30 @@
                 searchVideo();
             }
         });
+
+        // Skroll yordamida o'tkazish
+        window.addEventListener('wheel', (event) => {
+            if (event.deltaY > 0) {
+                // Skroll pastga, keyingi videoga o'tish
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+                loadVideo(currentVideoIndex);
+            } else {
+                // Skroll yuqoriga, oldingi videoga o'tish
+                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+                loadVideo(currentVideoIndex);
+            }
+        });
+
+        // Mobil qurilmalarda harakatlarni boshqarish
+        window.addEventListener('devicemotion', (event) => {
+            if (event.acceleration.y > 5) {
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+                loadVideo(currentVideoIndex);
+            } else if (event.acceleration.y < -5) {
+                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+                loadVideo(currentVideoIndex);
+            }
+        });
     </script>
 </body>
 </html>
