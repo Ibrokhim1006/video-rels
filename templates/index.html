@@ -178,7 +178,7 @@
 
     <div class="container" id="videoContainer">
         <div class="video-container">
-            <video id="video" loop autoplay></video>
+            <video id="video" loop autoplay></video> <!-- muted atributi olib tashlandi -->
             <div class="overlay">
                 <div id="icon" class="icon play-icon"></div>
                 <div class="controls">
@@ -240,60 +240,68 @@
             }
             // Send the like request to the server
             await fetch(`/video/${videoId}/like/`, { method: 'POST' });
-            videos[currentVideoIndex].likes++;
-            likeCount.textContent = `Likes: ${videos[currentVideoIndex].likes}`; // Update like count
-            likeButton.classList.toggle('active');
+            videos[currentVideoIndex].likes++; // Increment the like count
+            likeCount.textContent = `Likes: ${videos[currentVideoIndex].likes}`; // Update like count display
         });
 
         shareButton.addEventListener('click', () => {
-            const videoUrl = window.location.origin + videos[currentVideoIndex].src; // Domen nomi bilan birga video URL
-            const videoTitleText = videos[currentVideoIndex].title;
-            const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(videoTitleText)}`;
-            window.open(telegramShareUrl, '_blank');
+            const videoUrl = videos[currentVideoIndex].src; // Get the current video URL
+            navigator.clipboard.writeText(videoUrl).then(() => {
+                alert('Video URL copied to clipboard!');
+            });
         });
 
-        function searchVideo() {
-            const query = searchInput.value.toLowerCase();
-            const foundIndex = videos.findIndex(video => video.title.toLowerCase().includes(query));
-            if (foundIndex !== -1) {
-                currentVideoIndex = foundIndex;
-                loadVideo(currentVideoIndex);
-            }
-        }
-
-        searchButton.addEventListener('click', searchVideo);
-        searchInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                searchVideo();
-            }
-        });
-
-        // Skroll yordamida o'tkazish
+        // Kompyuter uchun skroll
         window.addEventListener('wheel', (event) => {
-            if (event.deltaY > 0) {
-                // Skroll pastga
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            if (event.deltaY < 0) {
+                // Yuqoriga skroll
+                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
                 loadVideo(currentVideoIndex);
             } else {
-                // Skroll yuqoriga
+                // Pastga skroll
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+                loadVideo(currentVideoIndex);
+            }
+        });
+
+        // Mobil qurilmalar uchun skroll
+        let touchStartY = 0;
+
+        window.addEventListener('touchstart', (event) => {
+            touchStartY = event.touches[0].clientY;
+        });
+
+        window.addEventListener('touchmove', (event) => {
+            const touchEndY = event.touches[0].clientY;
+            if (touchStartY > touchEndY + 50) {
+                // Pastga skroll
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+                loadVideo(currentVideoIndex);
+            } else if (touchStartY < touchEndY - 50) {
+                // Yuqoriga skroll
                 currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
                 loadVideo(currentVideoIndex);
             }
-            event.preventDefault(); // Skrollni to'xtatish
-        }, { passive: false }); // Passive parametrini false qilamiz
+        });
 
-        // Sensor yordamida o'tkazish
-        window.addEventListener('devicemotion', (event) => {
-            if (event.acceleration && event.acceleration.y) {
-                if (event.acceleration.y > 5) {
-                    currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-                    loadVideo(currentVideoIndex);
-                } else if (event.acceleration.y < -5) {
-                    currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
-                    loadVideo(currentVideoIndex);
-                }
+        // Qidiruv tugmasini bosganingizda qidiruv natijalarini ko'rsatish
+        searchButton.addEventListener('click', () => {
+            const query = searchInput.value.toLowerCase();
+            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(query));
+            if (filteredVideos.length > 0) {
+                currentVideoIndex = 0; // Birinchi videoni yuklash
+                loadFilteredVideos(filteredVideos);
+            } else {
+                alert('No videos found');
             }
         });
+
+        function loadFilteredVideos(filteredVideos) {
+            // Mavjud videolar ro'yxatini yangilang
+            videos.length = 0; // Mavjud videolar ro'yxatini tozalang
+            filteredVideos.forEach(video => videos.push(video)); // Yangi videolarni qo'shish
+            loadVideo(currentVideoIndex);
+        }
     </script>
 </body>
 </html>
