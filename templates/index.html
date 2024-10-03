@@ -63,7 +63,7 @@
             height: 100vh;
             overflow: hidden;
             border-radius: 15px;
-            margin-top: 60px; /* Qidirish panelidan pastga ko'chirish uchun */
+            margin-top: 60px;
         }
 
         video {
@@ -91,9 +91,13 @@
         }
 
         .controls {
+            position: absolute;
+            bottom: 66px; /* Tugmalar pastda joylashishi uchun */
+            right: 10px; /* O'ng tomonda joylashishi */
             display: flex;
-            justify-content: flex-end; /* O'ng tomonga joylash */
-            margin-right: 20px; /* O'ng tomondan masofa */
+            flex-direction: column; /* Tugmalarni vertikal joylashtirish */
+            align-items: center; /* Tugmalarni o'rtada joylashtirish */
+            gap: 5px; /* Tugmalar va like soni o'rtasidagi masofa */
         }
 
         .icon {
@@ -106,11 +110,33 @@
             align-items: center;
             cursor: pointer;
             transition: background-color 0.3s;
-            margin: 0 5px;
         }
 
         .icon:hover {
             background-color: #f0f0f0;
+        }
+
+        .like-icon:before {
+            content: "👍";
+            font-size: 24px;
+            color: #000;
+        }
+
+        .share-icon:before {
+            content: "🔗";
+            font-size: 24px;
+            color: #000;
+        }
+
+        .like-icon.active {
+            background-color: #ff6600;
+        }
+
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .play-icon:before {
@@ -123,24 +149,6 @@
             content: "❚❚";
             font-size: 30px;
             color: #000;
-        }
-
-        .like-icon:before {
-            content: "❤️";
-            font-size: 30px;
-            color: #000;
-        }
-
-        .share-icon:before {
-            content: "🔗";
-            font-size: 30px;
-            color: #000;
-        }
-
-        .like-count {
-            margin-left: 10px;
-            font-size: 20px;
-            color: #fff;
         }
 
         .video-title {
@@ -156,30 +164,9 @@
             border-radius: 5px;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .close {
-            float: right;
-            font-size: 25px;
-            cursor: pointer;
+        .like-count {
+            font-size: 18px; /* Like sonining o'lchami */
+            color: #fff; /* Rangini oq qilib o'rnatish */
         }
     </style>
 </head>
@@ -193,12 +180,10 @@
         <div class="video-container" id="videoContainer">
             <video id="video" loop autoplay></video>
             <div class="overlay">
+                <div id="icon" class="icon play-icon"></div>
                 <div class="controls">
-                    <div id="icon" class="icon play-icon"></div>
-                    <!-- Like tugmasi va soni -->
                     <div id="likeButton" class="icon like-icon"></div>
-                    <span id="likeCount" class="like-count">0</span>
-                    <!-- Share tugmasi -->
+                    <div class="like-count" id="likeCount"></div> <!-- Like soni -->
                     <div id="shareButton" class="icon share-icon"></div>
                 </div>
             </div>
@@ -206,42 +191,27 @@
         </div>
     </div>
 
-    <!-- Telegram va Instagramga ulashish havolasi uchun modal -->
-    <div id="shareModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Share Video</h2>
-            <button id="telegramShare">Share to Telegram</button>
-            <button id="instagramShare">Share to Instagram</button>
-            <button class="close" style="margin-top: 10px;">Close</button> <!-- Modalni yopish tugmasi -->
-        </div>
-    </div>
-
     <script>
         const video = document.getElementById('video');
         const icon = document.getElementById('icon');
         const videoTitle = document.getElementById('videoTitle');
+        const likeCount = document.getElementById('likeCount'); // Like count element
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const likeButton = document.getElementById('likeButton');
         const shareButton = document.getElementById('shareButton');
-        const shareModal = document.getElementById('shareModal');
-        const closeModal = document.querySelector('.close');
-        const telegramShare = document.getElementById('telegramShare');
-        const instagramShare = document.getElementById('instagramShare');
-        const likeCountElement = document.getElementById('likeCount');
 
         const videos = [
             {% for item in objects %}
-            { src: "{{ item.video.url }}", title: "{{ item.name }}" },
+            { id: {{ item.id }}, src: "{{ item.video.url }}", title: "{{ item.name }}", likes: {{ item.like_count }} },
             {% endfor %}
         ];
         let currentVideoIndex = 0;
-        let likeCount = 0; // Like soni
 
         function loadVideo(index) {
             video.src = videos[index].src;
             videoTitle.textContent = videos[index].title;
+            likeCount.textContent = `Likes: ${videos[index].likes}`; // Update like count
             video.play();
             icon.classList.remove('play-icon', 'pause-icon');
             icon.classList.add('pause-icon');
@@ -262,54 +232,40 @@
             }
         });
 
-        // Like tugmasi uchun
-        likeButton.addEventListener('click', () => {
-            likeButton.classList.toggle('liked');
-            if (likeButton.classList.contains('liked')) {
-                likeCount++;
-                likeCountElement.textContent = likeCount; // Yangilangan like sonini ko'rsatish
-                console.log('Liked video:', videos[currentVideoIndex].title);
-            } else {
-                likeCount--;
-                likeCountElement.textContent = likeCount; // Yangilangan like sonini ko'rsatish
-                console.log('Unliked video:', videos[currentVideoIndex].title);
+        likeButton.addEventListener('click', async () => {
+            const videoId = videos[currentVideoIndex].id; // Ensure videoId is assigned properly
+            if (!videoId) {
+                console.error('Video ID is undefined');
+                return; // Stop execution if videoId is undefined
             }
+            // Send the like request to the server
+            await fetch(`http://127.0.0.1:8000/video/${videoId}/like/`, { method: 'POST' });
+            videos[currentVideoIndex].likes++;
+            likeCount.textContent = `Likes: ${videos[currentVideoIndex].likes}`; // Update like count
+            likeButton.classList.toggle('active');
         });
 
-        // Qidirish funksiyasi
+        shareButton.addEventListener('click', () => {
+            const videoUrl = window.location.origin + videos[currentVideoIndex].src; // Domen nomi bilan birga video URL
+            const videoTitleText = videos[currentVideoIndex].title;
+            const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(videoTitleText)}`;
+            window.open(telegramShareUrl, '_blank');
+        });
+
         function searchVideo() {
             const query = searchInput.value.toLowerCase();
             const foundIndex = videos.findIndex(video => video.title.toLowerCase().includes(query));
             if (foundIndex !== -1) {
                 currentVideoIndex = foundIndex;
-                loadVideo(foundIndex);
-            } else {
-                console.log('no video');
+                loadVideo(currentVideoIndex);
             }
         }
 
-        // Qidirish tugmasi hodisasi
         searchButton.addEventListener('click', searchVideo);
-
-        // Ulanish tugmasi
-        shareButton.addEventListener('click', () => {
-            shareModal.style.display = 'flex';
-        });
-
-        // Modalni yopish
-        closeModal.addEventListener('click', () => {
-            shareModal.style.display = 'none';
-        });
-
-        // Telegram va Instagramga ulashish
-        telegramShare.addEventListener('click', () => {
-            alert('Video Telegramga ulashildi!');
-            shareModal.style.display = 'none';
-        });
-
-        instagramShare.addEventListener('click', () => {
-            alert('Video Instagramga ulashildi!');
-            shareModal.style.display = 'none';
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                searchVideo();
+            }
         });
     </script>
 </body>
