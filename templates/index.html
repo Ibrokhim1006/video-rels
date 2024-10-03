@@ -9,7 +9,7 @@
         body {
             margin: 0;
             background-color: #000;
-            overflow-y: scroll;
+            overflow: hidden; /* Overflow-ni yashirish */
             color: #fff;
         }
 
@@ -176,8 +176,8 @@
         <button id="searchButton">Поиск</button>
     </div>
 
-    <div class="container">
-        <div class="video-container" id="videoContainer">
+    <div class="container" id="videoContainer">
+        <div class="video-container">
             <video id="video" loop autoplay></video>
             <div class="overlay">
                 <div id="icon" class="icon play-icon"></div>
@@ -271,24 +271,27 @@
         // Skroll yordamida o'tkazish
         window.addEventListener('wheel', (event) => {
             if (event.deltaY > 0) {
-                // Skroll pastga, keyingi videoga o'tish
+                // Skroll pastga
                 currentVideoIndex = (currentVideoIndex + 1) % videos.length;
                 loadVideo(currentVideoIndex);
             } else {
-                // Skroll yuqoriga, oldingi videoga o'tish
+                // Skroll yuqoriga
                 currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
                 loadVideo(currentVideoIndex);
             }
-        });
+            event.preventDefault(); // Skrollni to'xtatish
+        }, { passive: false }); // Passive parametrini false qilamiz
 
-        // Mobil qurilmalarda harakatlarni boshqarish
+        // Sensor yordamida o'tkazish
         window.addEventListener('devicemotion', (event) => {
-            if (event.acceleration.y > 5) {
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-                loadVideo(currentVideoIndex);
-            } else if (event.acceleration.y < -5) {
-                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
-                loadVideo(currentVideoIndex);
+            if (event.acceleration && event.acceleration.y) {
+                if (event.acceleration.y > 5) {
+                    currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+                    loadVideo(currentVideoIndex);
+                } else if (event.acceleration.y < -5) {
+                    currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+                    loadVideo(currentVideoIndex);
+                }
             }
         });
     </script>
