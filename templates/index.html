@@ -239,7 +239,7 @@
                 return; // Stop execution if videoId is undefined
             }
             // Send the like request to the server
-            await fetch(`http://127.0.0.1:8000/video/${videoId}/like/`, { method: 'POST' });
+            await fetch(`/video/${videoId}/like/`, { method: 'POST' });
             videos[currentVideoIndex].likes++;
             likeCount.textContent = `Likes: ${videos[currentVideoIndex].likes}`; // Update like count
             likeButton.classList.toggle('active');
