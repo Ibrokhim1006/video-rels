@@ -168,6 +168,15 @@
             font-size: 18px; /* Like sonining o'lchami */
             color: #fff; /* Rangini oq qilib o'rnatish */
         }
+        .mute-icon:before {
+            content: "🔊"; /* Ovoz belgisini ko'rsatish */
+            font-size: 24px;
+            color: #000;
+        }
+
+        .mute-icon.muted:before {
+            content: "🔇"; /* Ovoz o'chirilganida belgi */
+        }
     </style>
 </head>
 <body>
@@ -178,13 +187,14 @@
 
     <div class="container" id="videoContainer">
         <div class="video-container">
-            <video id="video" loop autoplay></video> <!-- muted atributi olib tashlandi -->
+            <video id="video" loop autoplay muted></video> <!-- muted atributi olib tashlandi -->
             <div class="overlay">
                 <div id="icon" class="icon play-icon"></div>
                 <div class="controls">
                     <div id="likeButton" class="icon like-icon"></div>
                     <div class="like-count" id="likeCount"></div> <!-- Like soni -->
                     <div id="shareButton" class="icon share-icon"></div>
+                    <div id="muteButton" class="icon mute-icon"></div>
                 </div>
             </div>
             <div id="videoTitle" class="video-title"></div>
@@ -302,6 +312,22 @@
             filteredVideos.forEach(video => videos.push(video)); // Yangi videolarni qo'shish
             loadVideo(currentVideoIndex);
         }
+
+        const muteButton = document.getElementById('muteButton');
+
+    muteButton.addEventListener('click', () => {
+        if (video.muted) {
+            video.muted = false; // Ovoz o'chiriladi
+            muteButton.classList.remove('muted'); // Ovoz belgisini yangilash
+        } else {
+            video.muted = true; // Ovoz yoqiladi
+            muteButton.classList.add('muted'); // Ovoz o'chirilgan belgisini yangilash
+        }
+    });
+
+    // Sahna yuklanganda default holat
+    video.muted = true; // Videoni muet holatida yuklang
+    muteButton.classList.add('muted'); // Ovoz o'chirilgan belgisini ko'rsatish
     </script>
 </body>
 </html>
