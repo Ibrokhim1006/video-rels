@@ -10,6 +10,7 @@ from rels.models import Video
 def video_rels(request):
     context = {}
     context['objects'] = Video.objects.all().order_by('?')
+    context['objects2'] = Video.objects.all()
     return render(request, 'index.html', context)
 
 @csrf_exempt
