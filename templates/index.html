@@ -209,6 +209,72 @@
         .mute-icon.muted:before {
             content: "🔇"; /* Ovoz o'chirilganida belgi */
         }
+        @media only screen and (max-width: 600px) {
+    .container {
+        justify-content: flex-start;
+        align-items: center;
+        padding: 10px;
+        height: 100vh;
+    }
+
+    .search-bar {
+        padding: 13px;
+    }
+
+    .search-bar input {
+        width: 80%; /* Qidiruv maydonining kengligini moslashtirish */
+        font-size: 14px;
+        padding: 8px 30px 8px 15px; /* Ichki masofalarni kichikroq qilish */
+    }
+
+    .search-bar button {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+
+    .clear-button {
+        font-size: 16px;
+        right: 20px; /* O'ng tomonda joyni kichraytirish */
+    }
+
+    .video-container {
+        height: 80vh; /* Video balandligini moslashtirish */
+        margin-top: 50px;
+    }
+
+    video {
+        width: 100%;
+        height: 100%; /* Video ekranni to'ldirishini ta'minlash */
+        border-radius: 10px;
+    }
+
+    .controls {
+        bottom: 60px; /* Tugmalarni yuqoriroq ko'tarish */
+        right: 5px; /* O'ng tomonga yaqinroq qilish */
+        gap: 3px; /* Tugmalar orasidagi masofani kichraytirish */
+    }
+
+    .icon {
+        width: 40px; /* Tugma o'lchamini kichraytirish */
+        height: 40px;
+    }
+
+    .like-count {
+        font-size: 14px; /* Like sonini kichikroq qilish */
+    }
+
+    .video-title {
+        font-size: 16px; /* Sarlavha kattaligi */
+        bottom: 30px; /* Sarlavhani biroz yuqoriroq qilish */
+        padding: 3px;
+    }
+
+    .hashteg {
+        font-size: 14px; /* Hashteg kattaligi */
+        bottom: 10px; /* Hashteg joylashuvi */
+        padding: 3px;
+    }
+}
     </style>
 </head>
 <body>
@@ -299,12 +365,11 @@
         });
 
         shareButton.addEventListener('click', () => {
-            const videoUrl = videos[currentVideoIndex].src; // Get the current video URL
-            navigator.clipboard.writeText(videoUrl).then(() => {
-                alert('Video URL copied to clipboard!');
-            });
+            const videoUrl = window.location.origin + videos[currentVideoIndex].src; // Domen nomi bilan birga video URL
+            const videoTitleText = videos[currentVideoIndex].title;
+            const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(videoTitleText)}`;
+            window.open(telegramShareUrl, '_blank');
         });
-
         // Kompyuter uchun skroll
         window.addEventListener('wheel', (event) => {
             if (event.deltaY < 0) {
