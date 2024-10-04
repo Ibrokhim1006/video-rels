@@ -83,6 +83,7 @@
             border-radius: 15px;
             margin-top: 60px;
         }
+        
 
         video {
             width: 100%;
@@ -384,22 +385,22 @@
         });
 
         // Mobil qurilmalar uchun skroll
-        let touchStartY = 0;
-
+        let touchStartY = null;
         window.addEventListener('touchstart', (event) => {
-            touchStartY = event.touches[0].clientY;
+            touchStartY = event.touches[0].clientY; // Touchning boshlanish nuqtasi
         });
-
         window.addEventListener('touchmove', (event) => {
-            const touchEndY = event.touches[0].clientY;
-            if (touchStartY > touchEndY + 50) {
-                // Pastga skroll
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            if (touchStartY === null) return;
+            const touchY = event.touches[0].clientY;
+            const deltaY = touchY - touchStartY;
+            if (deltaY > 50) { // Agar yuqoridan pastga siljitsa
+                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Oldingi video
                 loadVideo(currentVideoIndex);
-            } else if (touchStartY < touchEndY - 50) {
-                // Yuqoriga skroll
-                currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+                touchStartY = null; // Yana boshidan boshlash
+            } else if (deltaY < -50) { // Agar pastdan yuqoriga siljitsa
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Keyingi video
                 loadVideo(currentVideoIndex);
+                touchStartY = null; // Yana boshidan boshlash
             }
         });
 
@@ -413,7 +414,7 @@
                 currentVideoIndex = 0; // Birinchi videoni yuklash
                 loadFilteredVideos(filteredVideos);
             } else {
-                alert('No videos found');
+                console.log('no video')
             }
         });
 
