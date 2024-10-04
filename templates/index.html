@@ -284,7 +284,7 @@
             <input type="text" id="searchInput" placeholder="Поиск видео...">
             <button class="clear-button" id="clearButton">X</button>
         </div>
-        <button id="searchButton">Поиск</button>
+        <button id="searchButton" disabled>Поиск</button>
     </div>
 
     <div class="container" id="videoContainer">
@@ -418,6 +418,17 @@
             }
         });
 
+        searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim(); // Trim yordamida bo'sh joylarni olib tashlaymiz
+        
+        // Agar input bo'sh bo'lsa yoki faqat probel bo'lsa
+        if (query === '') {
+            searchButton.disabled = true; // Tugmani o'chirish
+        } else {
+            searchButton.disabled = false; // Tugmani yoqish
+        }
+    });
+
         function loadFilteredVideos(filteredVideos) {
             // Mavjud videolar ro'yxatini yangilang
             videos.length = 0; // Mavjud videolar ro'yxatini tozalang
@@ -442,7 +453,6 @@
     muteButton.classList.add('muted'); // Ovoz o'chirilgan belgisini ko'rsatish
 
 
-
     // X tugmachasini faqat matn mavjud bo'lsa ko'rsatish
     searchInput.addEventListener('input', () => {
             if (searchInput.value.length > 0) {
@@ -452,12 +462,15 @@
             }
         });
 
+
         // X tugmachasini bosganda qidiruv maydonini tozalash
         clearButton.addEventListener('click', () => {
             searchInput.value = '';
             clearButton.style.display = 'none'; // Tugmani yashirish
             searchInput.focus(); // Qidiruv maydoniga fokusni qaytarish
+            location.reload(); // Sahifani qayta yuklash
         });
+
     </script>
 </body>
 </html>
